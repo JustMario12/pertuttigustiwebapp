@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Menù del Giorno</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --orange:    #F2A93B;
+      --orange-dk: #d4882a;
+      --orange-lt: #fde8bc;
+      --ink:       #1e1408;
+      --ink-soft:  #5a4a30;
+      --white:     #fffdf7;
+      --card-bg:   #fff9ee;
+      --radius:    14px;
+      --shadow:    0 4px 24px rgba(30,20,8,0.10);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background: var(--orange);
+      min-height: 100vh;
+      padding: 0 0 120px;
+      color: var(--ink);
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--ink);
+      color: var(--orange);
+      padding: 20px 24px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    header .bowl { font-size: 2rem; }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    header p {
+      font-size: 0.75rem;
+      color: #c8a060;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* ── Date strip ── */
+    .date-strip {
+      background: var(--orange-dk);
+      color: var(--white);
+      text-align: center;
+      padding: 8px;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    /* ── Main content ── */
+    main { padding: 20px 16px 0; display: flex; flex-direction: column; gap: 18px; }
+
+    /* ── Category card ── */
+    .category {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: slideUp 0.4s ease both;
+    }
+    .category:nth-child(1) { animation-delay: 0.05s; }
+    .category:nth-child(2) { animation-delay: 0.12s; }
+    .category:nth-child(3) { animation-delay: 0.19s; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .cat-header {
+      background: var(--ink);
+      color: var(--orange);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cat-header .icon { font-size: 1.3rem; }
+    .cat-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+
+    /* ── Dish rows ── */
+    .dishes { padding: 12px 14px 6px; display: flex; flex-direction: column; gap: 8px; }
+
+    .dish-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+      background: white;
+      border-radius: 10px;
+      padding: 8px 10px;
+      border: 1.5px solid #f0e0c0;
+      transition: border-color 0.2s;
+    }
+    .dish-row:focus-within { border-color: var(--orange-dk); }
+
+    .dish-row .num {
+      grid-column: 1 / -1;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: -2px;
+    }
+
+    .dish-row input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.93rem;
+      color: var(--ink);
+      width: 100%;
+    }
+    .dish-row input::placeholder { color: #c0a878; }
+
+    .price-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--orange-lt);
+      border-radius: 7px;
+      padding: 4px 8px;
+      min-width: 88px;
+    }
+    .price-wrap .euro {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--orange-dk);
+    }
+    .price-wrap input {
+      width: 52px;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--ink);
+      font-family: 'Lato', sans-serif;
+      text-align: right;
+    }
+    .price-wrap input::placeholder { color: #c8a060; }
+
+    .btn-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #c0a878;
+      font-size: 1.1rem;
+      padding: 2px 4px;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1;
+    }
+    .btn-remove:hover { color: #c0392b; background: #fde8e8; }
+
+    /* ── Add dish button ── */
+    .btn-add {
+      margin: 8px 14px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px;
+      border: 2px dashed var(--orange-dk);
+      border-radius: 10px;
+      background: none;
+      color: var(--orange-dk);
+      font-family: 'Lato', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.15s;
+    }
+    .btn-add:hover { background: var(--orange-lt); }
+
+    /* ── Fixed bottom bar ── */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      padding: 14px 16px;
+      background: var(--ink);
+      display: flex;
+      gap: 10px;
+      z-index: 20;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+    }
+
+    .btn-reset {
+      flex: 0 0 auto;
+      padding: 14px 16px;
+      background: #3a2c18;
+      color: #c8a060;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-reset:hover { background: #4a3a20; }
+
+    .btn-generate {
+      flex: 1;
+      padding: 14px;
+      background: var(--orange);
+      color: var(--ink);
+      border: none;
+      border-radius: 12px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      transition: background 0.15s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-generate:active { transform: scale(0.97); }
+    .btn-generate:hover  { background: var(--orange-dk); color: white; }
+    .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px);
+      background: var(--ink);
+      color: var(--orange);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      white-space: nowrap;
+      z-index: 99;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="bowl">🍜</span>
+  <div>
+    <h1>Menù del Giorno</h1>
+    <p>Inserisci i piatti di oggi</p>
+  </div>
+</header>
+
+<div class="date-strip" id="dateStrip">Caricamento…</div>
+
+<main id="main"></main>
+
+<div class="bottom-bar">
+  <button class="btn-reset" onclick="resetAll()">🗑 Svuota</button>
+  <button class="btn-generate" id="btnGenerate" onclick="sendMenu()">
+    🍽️ Genera Menù
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Telegram Web App init ──────────────────────────────────────────────────
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.setHeaderColor('#1e1408');
+  tg.setBackgroundColor('#F2A93B');
+}
+
+// ── Date strip ────────────────────────────────────────────────────────────
+const days   = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+const months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+                'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+const now = new Date();
+document.getElementById('dateStrip').textContent =
+  `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+// ── Categories config ─────────────────────────────────────────────────────
+const CATEGORIES = [
+  { key: 'primi',    label: 'Primi',    icon: '🍝', placeholder: 'es. Tagliatelle al ragù' },
+  { key: 'secondi',  label: 'Secondi',  icon: '🥩', placeholder: 'es. Pollo arrosto'       },
+  { key: 'contorni', label: 'Contorni', icon: '🥗', placeholder: 'es. Patate al forno'     },
+];
+
+// ── State ─────────────────────────────────────────────────────────────────
+// data[catKey] = [ { dish, price }, … ]
+const data = {};
+CATEGORIES.forEach(c => { data[c.key] = [{ dish: '', price: '' }]; });
+
+// ── Render ────────────────────────────────────────────────────────────────
+function render() {
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  CATEGORIES.forEach(cat => {
+    const card = document.createElement('div');
+    card.className = 'category';
+    card.innerHTML = `
+      <div class="cat-header">
+        <span class="icon">${cat.icon}</span>
+        <h2>${cat.label}</h2>
+      </div>
+      <div class="dishes" id="dishes-${cat.key}"></div>
+      <button class="btn-add" onclick="addRow('${cat.key}')">＋ Aggiungi piatto</button>
+    `;
+    main.appendChild(card);
+
+    const dishesEl = card.querySelector(`#dishes-${cat.key}`);
+    data[cat.key].forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.className = 'dish-row';
+      row.innerHTML = `
+        <span class="num">Piatto ${idx + 1}</span>
+        <input type="text"
+               placeholder="${cat.placeholder}"
+               value="${escHtml(item.dish)}"
+               oninput="updateField('${cat.key}', ${idx}, 'dish', this.value)"
+               inputmode="text" />
+        <div class="price-wrap">
+          <span class="euro">€</span>
+          <input type="text"
+                 inputmode="decimal"
+                 placeholder="0,00"
+                 value="${escHtml(item.price)}"
+                 oninput="updateField('${cat.key}', ${idx}, 'price', this.value)" />
+        </div>
+        <button class="btn-remove" onclick="removeRow('${cat.key}', ${idx})" title="Rimuovi">✕</button>
+      `;
+      dishesEl.appendChild(row);
+    });
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
+function updateField(cat, idx, field, val) {
+  data[cat][idx][field] = val;
+}
+
+function addRow(cat) {
+  data[cat].push({ dish: '', price: '' });
+  render();
+  // Focus new dish input
+  setTimeout(() => {
+    const rows = document.querySelectorAll(`#dishes-${cat} .dish-row`);
+    const last = rows[rows.length - 1];
+    if (last) last.querySelector('input').focus();
+  }, 50);
+}
+
+function removeRow(cat, idx) {
+  if (data[cat].length <= 1) { showToast('Almeno un piatto per categoria!'); return; }
+  data[cat].splice(idx, 1);
+  render();
+}
+
+function resetAll() {
+  if (!confirm('Svuotare tutto il menù?')) return;
+  CATEGORIES.forEach(c => { data[c.key] = [{ dish: '', price: '' }]; });
+  render();
+}
+
+// ── Send to bot ───────────────────────────────────────────────────────────
+function sendMenu() {
+  // Validate — at least one dish per category must be filled
+  let hasAny = false;
+  for (const cat of CATEGORIES) {
+    for (const item of data[cat.key]) {
+      if (item.dish.trim()) { hasAny = true; break; }
+    }
+  }
+  if (!hasAny) { showToast('Inserisci almeno un piatto!'); return; }
+
+  // Build clean payload (skip blank rows)
+  const payload = {};
+  CATEGORIES.forEach(cat => {
+    payload[cat.key] = data[cat.key]
+      .filter(i => i.dish.trim())
+      .map(i => ({ dish: i.dish.trim(), price: i.price.trim() }));
+  });
+
+  const json = JSON.stringify(payload);
+
+  if (tg) {
+    tg.sendData(json);          // sends to bot via web_app_data
+  } else {
+    // Dev mode: show in console
+    console.log('Payload:', json);
+    showToast('✅ (dev) Dati pronti — vedi console');
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
