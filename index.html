@@ -162,6 +162,23 @@
       text-align: right;
     }
 
+    .unit-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--ink-soft);
+      font-weight: 700;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .unit-toggle input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--orange-dk);
+    }
+
     .btn-remove {
       background: none;
       border: none;
@@ -292,7 +309,7 @@ const CATEGORIES = [
 ];
 
 const data = {};
-CATEGORIES.forEach(c => { data[c.key] = [{ dish: '', price: '' }]; });
+CATEGORIES.forEach(c => { data[c.key] = [{ dish: '', price: '', unit: '' }]; });
 
 function escHtml(s) {
   return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
@@ -328,6 +345,12 @@ function render() {
           <input type="text" inputmode="decimal" placeholder="0,00" value="${escHtml(item.price)}"
                  oninput="updateField('${cat.key}', ${idx}, 'price', this.value)" />
         </div>
+        <label class="unit-toggle" title="Prezzo al pezzo">
+          <input type="checkbox"
+                 ${item.unit === 'pezzo' ? 'checked' : ''}
+                 onchange="updateField('${cat.key}', ${idx}, 'unit', this.checked ? 'pezzo' : '')" />
+          <span>al pezzo</span>
+        </label>
         <button class="btn-remove" onclick="removeRow('${cat.key}', ${idx})" title="Rimuovi">✕</button>
       `;
       dishesEl.appendChild(row);
@@ -340,7 +363,7 @@ function updateField(cat, idx, field, val) {
 }
 
 function addRow(cat) {
-  data[cat].push({ dish: '', price: '' });
+  data[cat].push({ dish: '', price: '', unit: '' });
   render();
   setTimeout(() => {
     const rows = document.querySelectorAll(`#dishes-${cat} .dish-row`);
@@ -360,7 +383,7 @@ function removeRow(cat, idx) {
 
 function resetAll() {
   if (!confirm('Svuotare tutto il menù?')) return;
-  CATEGORIES.forEach(c => { data[c.key] = [{ dish: '', price: '' }]; });
+  CATEGORIES.forEach(c => { data[c.key] = [{ dish: '', price: '', unit: '' }]; });
   render();
 }
 
@@ -380,7 +403,11 @@ function sendMenu() {
   CATEGORIES.forEach(cat => {
     payload[cat.key] = data[cat.key]
       .filter(i => i.dish.trim())
-      .map(i => ({ dish: i.dish.trim(), price: i.price.trim() }));
+      .map(i => ({
+        dish: i.dish.trim(),
+        price: i.price.trim(),
+        unit: i.unit || ''
+      }));
   });
 
   const json = JSON.stringify(payload);
