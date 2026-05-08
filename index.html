@@ -43,7 +43,6 @@
     }
 
     header .bowl { font-size: 2rem; }
-
     header h1 {
       font-family: 'Playfair Display', serif;
       font-size: 1.45rem;
@@ -91,7 +90,6 @@
     }
 
     .cat-header .icon { font-size: 1.3rem; }
-
     .cat-header h2 {
       font-family: 'Playfair Display', serif;
       font-size: 1.15rem;
@@ -100,37 +98,69 @@
 
     .dishes { padding: 12px 14px 6px; display: flex; flex-direction: column; gap: 8px; }
 
- .dish-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto auto;
-  gap: 6px;
-  align-items: center;
-  background: white;
-  border-radius: 10px;
-  padding: 8px 10px;
-  border: 1.5px solid #f0e0c0;
-  transition: border-color 0.2s;
-}
+    .dish-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 8px;
+      align-items: center;
+      background: white;
+      border-radius: 10px;
+      padding: 8px 10px;
+      border: 1.5px solid #f0e0c0;
+      transition: border-color 0.2s;
+    }
 
-.price-wrap {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  background: var(--orange-lt);
-  border-radius: 7px;
-  padding: 3px 6px;
-  min-width: 72px;
-  max-width: 72px;
-}
+    .dish-row:focus-within { border-color: var(--orange-dk); }
 
-.price-wrap .euro {
-  font-size: 0.75rem;
-}
+    .dish-row .num {
+      grid-column: 1 / -1;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: -2px;
+    }
 
-.price-wrap input {
-  width: 42px;
-  font-size: 0.82rem;
-}
+    .dish-row input[type="text"] {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.93rem;
+      color: var(--ink);
+      width: 100%;
+    }
+
+    .dish-row input::placeholder { color: #c0a878; }
+
+    .price-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--orange-lt);
+      border-radius: 7px;
+      padding: 4px 8px;
+      min-width: 88px;
+    }
+
+    .price-wrap .euro {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--orange-dk);
+    }
+
+    .price-wrap input {
+      width: 52px;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--ink);
+      font-family: 'Lato', sans-serif;
+      text-align: right;
+    }
 
     .unit-toggle {
       display: flex;
@@ -190,10 +220,9 @@
       gap: 10px;
       z-index: 20;
       box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
-      flex-wrap: wrap;
     }
 
-    .btn-reset, .btn-reload {
+    .btn-reset {
       flex: 0 0 auto;
       padding: 14px 16px;
       background: #3a2c18;
@@ -221,7 +250,6 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-width: 180px;
     }
 
     .toast {
@@ -256,8 +284,7 @@
 <main id="main"></main>
 
 <div class="bottom-bar">
-  <button class="btn-reset" onclick="resetAll()">🗑 Svuota</button>
-  <button class="btn-reload" onclick="reloadLastMenu()">♻️ Ricarica</button>
+  <button class="btn-reset" onclick="reloadLastMenu()">♻️ Ripristina</button>
   <button class="btn-generate" id="btnGenerate" onclick="sendMenu()">🍽️ Genera Menù</button>
 </div>
 
@@ -355,10 +382,15 @@ function removeRow(cat, idx) {
   render();
 }
 
-function resetAll() {
-  if (!confirm('Svuotare tutto il menù?')) return;
-  CATEGORIES.forEach(c => { data[c.key] = [{ dish: '', price: '', unit: '' }]; });
-  render();
+function reloadLastMenu() {
+  const json = JSON.stringify({ action: "reload_last_menu" });
+  if (tg) {
+    tg.sendData(json);
+    tg.close();
+  } else {
+    console.log('Reload request:', json);
+    showToast('✅ Richiesta di ricarica pronta — vedi console');
+  }
 }
 
 function sendMenu() {
@@ -384,23 +416,14 @@ function sendMenu() {
       }));
   });
 
-  if (tg) {
-    tg.sendData(JSON.stringify(payload));
-    tg.close();
-  } else {
-    console.log('Payload:', payload);
-    showToast('✅ Dati pronti — vedi console');
-  }
-}
+  const json = JSON.stringify(payload);
 
-function reloadLastMenu() {
-  const json = JSON.stringify({ action: "reload_last_menu" });
   if (tg) {
     tg.sendData(json);
     tg.close();
   } else {
-    console.log('Reload request:', json);
-    showToast('✅ Richiesta di ricarica pronta — vedi console');
+    console.log('Payload:', json);
+    showToast('✅ Dati pronti — vedi console');
   }
 }
 
