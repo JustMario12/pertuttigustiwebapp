@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Menù del Giorno</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  //fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
   <style>
     :root {
       --orange: #F2A93B;
@@ -100,12 +100,17 @@
 
     .dish-row {
       display: grid;
-      grid-template-columns: 1fr auto auto auto;
+      grid-template-columns: 1fr auto;
+      grid-template-areas:
+        "num num"
+        "dish dish"
+        "price unit"
+        "remove remove";
       gap: 8px;
       align-items: center;
       background: white;
       border-radius: 10px;
-      padding: 8px 10px;
+      padding: 10px;
       border: 1.5px solid #f0e0c0;
       transition: border-color 0.2s;
     }
@@ -113,7 +118,7 @@
     .dish-row:focus-within { border-color: var(--orange-dk); }
 
     .dish-row .num {
-      grid-column: 1 / -1;
+      grid-area: num;
       font-size: 0.65rem;
       font-weight: 700;
       letter-spacing: 0.1em;
@@ -122,26 +127,29 @@
       margin-bottom: -2px;
     }
 
-    .dish-row input[type="text"] {
+    .dish-input {
+      grid-area: dish;
+      width: 100%;
       border: none;
       outline: none;
       background: transparent;
       font-family: 'Lato', sans-serif;
-      font-size: 0.93rem;
+      font-size: 0.95rem;
       color: var(--ink);
-      width: 100%;
     }
 
-    .dish-row input::placeholder { color: #c0a878; }
+    .dish-input::placeholder { color: #c0a878; }
 
     .price-wrap {
+      grid-area: price;
       display: flex;
       align-items: center;
       gap: 4px;
       background: var(--orange-lt);
       border-radius: 7px;
       padding: 4px 8px;
-      min-width: 88px;
+      min-width: 0;
+      width: 100%;
     }
 
     .price-wrap .euro {
@@ -151,7 +159,7 @@
     }
 
     .price-wrap input {
-      width: 32px;
+      width: 52px;
       border: none;
       outline: none;
       background: transparent;
@@ -163,6 +171,8 @@
     }
 
     .unit-toggle {
+      grid-area: unit;
+      justify-self: end;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -180,6 +190,8 @@
     }
 
     .btn-remove {
+      grid-area: remove;
+      justify-self: end;
       background: none;
       border: none;
       cursor: pointer;
@@ -269,6 +281,13 @@
     }
 
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (min-width: 700px) {
+      .dish-row {
+        grid-template-columns: 1fr auto auto auto;
+        grid-template-areas: "num num num num" "dish price unit remove";
+      }
+    }
   </style>
 </head>
 <body>
@@ -340,14 +359,14 @@ function render() {
       row.className = 'dish-row';
       row.innerHTML = `
         <span class="num">Piatto ${idx + 1}</span>
-        <input type="text" placeholder="${cat.placeholder}" value="${escHtml(item.dish)}"
+        <input class="dish-input" type="text" placeholder="${cat.placeholder}" value="${escHtml(item.dish)}"
                oninput="updateField('${cat.key}', ${idx}, 'dish', this.value)" />
         <div class="price-wrap">
           <span class="euro">€</span>
           <input type="text" inputmode="decimal" placeholder="0,00" value="${escHtml(item.price)}"
                  oninput="updateField('${cat.key}', ${idx}, 'price', this.value)" />
         </div>
-        <label class="unit-toggle" title="Prezzo al pezzo">
+        abel class="unit-toggle" title="Prezzo al pezzo">
           <input type="checkbox" ${item.unit === 'pezzo' ? 'checked' : ''}
                  onchange="updateField('${cat.key}', ${idx}, 'unit', this.checked ? 'pezzo' : '')" />
           <span>al pezzo</span>
