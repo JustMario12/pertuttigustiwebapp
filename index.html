@@ -100,12 +100,10 @@
 
     .dish-row {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
       grid-template-areas:
-        "num num"
-        "dish dish"
-        "price unit"
-        "remove remove";
+        "num num num num"
+        "dish price unit remove";
       gap: 8px;
       align-items: center;
       background: white;
@@ -129,8 +127,8 @@
 
     .dish-input {
       grid-area: dish;
-      width: min(100%, 720px);
-      max-width: 720px;
+      width: 100%;
+      max-width: none;
       border: none;
       outline: none;
       background: transparent;
@@ -144,7 +142,7 @@
 
     .price-wrap {
       grid-area: price;
-      display: auto;   
+      display: flex;
       align-items: center;
       gap: 1px;
       background: var(--orange-lt);
