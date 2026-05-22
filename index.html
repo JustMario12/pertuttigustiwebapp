@@ -371,7 +371,7 @@ function render() {
         <label class="unit-toggle" title="Prezzo al pezzo">
           <input type="checkbox" ${item.unit === 'pezzo' ? 'checked' : ''}
                  onchange="updateField('${cat.key}', ${idx}, 'unit', this.checked ? 'pezzo' : '')" />
-          <span>al pezzo</span>
+          <span>pz</span>
         </label>
         <button class="btn-remove" onclick="removeRow('${cat.key}', ${idx})" title="Rimuovi">✕</button>
       `;
