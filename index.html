@@ -332,6 +332,44 @@ const CATEGORIES = [
 const data = {};
 CATEGORIES.forEach(c => { data[c.key] = [{ dish: '', price: '', unit: '' }]; });
 
+function decodeBase64Url(encoded) {
+  let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = base64.length % 4;
+  if (pad > 0) {
+    base64 += '='.repeat(4 - pad);
+  }
+  const binary = atob(base64);
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  if (typeof TextDecoder !== 'undefined') {
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+  return decodeURIComponent(escape(binary));
+}
+
+function decodePrefill(encoded) {
+  if (!encoded) return null;
+  try {
+    const decoded = decodeBase64Url(encoded);
+    return JSON.parse(decoded);
+  } catch (err) {
+    console.error('Unable to decode prefill data', err);
+    return null;
+  }
+}
+
+const params = new URLSearchParams(window.location.search);
+const prefillData = decodePrefill(params.get('prefill'));
+if (prefillData && typeof prefillData === 'object') {
+  CATEGORIES.forEach(c => {
+    const items = Array.isArray(prefillData[c.key]) ? prefillData[c.key] : [];
+    data[c.key] = items.length > 0 ? items.map(item => ({
+      dish: item.dish || '',
+      price: item.price || '',
+      unit: item.unit || '',
+    })) : [{ dish: '', price: '', unit: '' }];
+  });
+}
+
 function escHtml(s) {
   return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }
